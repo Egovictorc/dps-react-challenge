@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { CheckedState } from '@radix-ui/react-checkbox';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,55 +16,50 @@ import {
 	SelectValue,
 } from './ui/select';
 import { Checkbox } from './ui/checkbox';
+import { useDebounce } from '~/hooks';
 
 type FilterProps = {
 	filter: string;
 	value: string;
 };
+
 const Users = () => {
 	// const [users, setUsers] = useState<IUser[]>([]);
-	const users: IUser[] = dummyUsers.users;
-	// const users: IUser[] = [];
+	// const users: IUser[] = dummyUsers.users;
+	const users: IUser[] = [];
 
 	const [nameFilter, setNameFilter] = useState('');
 	const [city, setCity] = useState('');
 	const [highlightOldest, setHighlightOldest] = useState(false);
-	const cities: string[] = [];
 	const [filteredUsers, setFilteredUsers] = useState<IUser[]>(users);
-	// const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
-	// const filterUsers = ({ filter, value }: FilterProps) => {
-	// 	const selected = users.filter(
-	// 		({ firstName, lastName }) =>
-	// 			firstName.toLowerCase().includes(value.toLowerCase()) ||
-	// 			lastName.toLowerCase().includes(value.toLowerCase())
-	// 	);
+	const debouncedSearchTerm = useDebounce(nameFilter);
 
-	//     setFilteredUsers(selected);
-	// };
-	const nameChangeFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { value } = e.target;
-		setNameFilter(value);
-
-		console.log('value ', value);
-		if (value) {
+	console.log("users ", users);
+	useEffect(() => {
+		if (debouncedSearchTerm) {
 			const selected = users.filter(
 				({ firstName, lastName, address }) =>
 					(firstName
 						.toLowerCase()
-						.includes(value.trim().toLowerCase()) ||
+						.includes(debouncedSearchTerm.trim().toLowerCase()) ||
 						lastName
 							.toLowerCase()
-							.includes(value.trim().toLowerCase())) &&
+							.includes(
+								debouncedSearchTerm.trim().toLowerCase()
+							)) &&
 					address.city
 						.toLowerCase()
 						.includes(city.trim().toLowerCase())
 			);
 			setFilteredUsers(selected);
-
-			// filterUsers({ filter: 'name', value: value });
 		} else {
 			setFilteredUsers(users);
 		}
+	}, [debouncedSearchTerm]);
+
+	const nameChangeFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { value } = e.target;
+		setNameFilter(value);
 	};
 
 	const cityChangeHandler = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -108,7 +103,7 @@ const Users = () => {
 			setFilteredUsers(users);
 		}
 
-		// fetchUsers();
+		fetchUsers();
 	}, []);
 
 	return (
@@ -136,6 +131,8 @@ const Users = () => {
 						City
 					</Label>
 					<select value={city} onChange={cityChangeHandler}>
+						<option value={''}>All</option>
+
 						{users.map(({ address }) => (
 							<option value={address.city} key={uuidv4()}>
 								{address.city}{' '}
