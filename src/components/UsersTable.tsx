@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { BASE_URL } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 import {
 	Table,
@@ -12,40 +10,34 @@ import {
 	TableRow,
 } from './ui/table';
 import { IUser } from '..';
+import { cn, formatDateString } from '~/lib/utils';
 
-const fetchedUsers = 0;
+const headers: { id: string; label: string; className?: string }[] = [
+	{ id: 'sn', label: 'S/N' },
+	{ id: 'full_name', label: 'Full Name' },
+	{ id: 'city', label: 'City' },
+	{ id: 'birth_day', label: 'Birth Day' },
+];
 
-const UsersTable = () => {
-	const [users, setUsers] = useState<IUser[]>([]);
+type Props = {
+	users: IUser[];
+};
 
-	useEffect(() => {
-		async function fetchUsers() {
-			const response = await fetch(BASE_URL + '/users');
-			const data: {
-				users: IUser[];
-				total: number;
-				skip: number;
-				limit: number;
-			} = await response.json();
-			const { users } = data;
-			console.log('data ', users);
-
-			setUsers(users);
-		}
-
-		fetchUsers();
-	}, []);
-
+const UsersTable = ({ users }: Props) => {
 	return (
 		<div>
 			<Table>
-				<TableCaption>A list of your recent invoices.</TableCaption>
+				<TableCaption>A list of Users.</TableCaption>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="w-[50px]">S/N</TableHead>
-						<TableHead className="w-42">Full Name</TableHead>
-						<TableHead className="text-left">City</TableHead>
-						<TableHead className="text-right">Birth Day</TableHead>
+						{headers.map(({ label, className }) => (
+							<TableHead
+								className={cn('w-[50px]', className)}
+								key={uuidv4()}
+							>
+								{label}
+							</TableHead>
+						))}
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -71,7 +63,9 @@ const UsersTable = () => {
 									<TableCell className="text-left">
 										{address.city}
 									</TableCell>
-									<TableCell className="text-left">{`${birthDate}`}</TableCell>
+									<TableCell className="text-left">{`${formatDateString(
+										birthDate
+									)}`}</TableCell>
 								</TableRow>
 							)
 						)

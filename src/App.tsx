@@ -1,6 +1,6 @@
 import dpsLogo from './assets/DPS.svg';
 import './App.css';
-import { UsersTable } from './components';
+import Users from './components/Users';
 
 function App() {
 	
@@ -12,9 +12,8 @@ function App() {
 				</a>
 			</div>
 			<div className="home-card">
-				<p>Your solution goes here 😊</p>
-				<p className='text-red-500 bg-blue-400'> Testing</p>
-				<UsersTable />
+				<p>My solution goes here 😊</p>
+				<Users />
 			</div>
 		</>
 	);

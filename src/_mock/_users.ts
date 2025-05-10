@@ -1,4 +1,4 @@
-const dummyUsers =  {
+export const dummyUsers =  {
     "users": [
         {
             "id": 1,
