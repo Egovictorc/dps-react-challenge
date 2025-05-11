@@ -1,6 +1,8 @@
 import { format, parseISO, parse } from 'date-fns';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { BASE_URL } from '~/utils';
+import { IUser } from '..';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -10,8 +12,7 @@ export function formatDateString(
 	_dateString: string = '2025-05-08T14:30:00Z',
 	formatString: string = 'MM.dd.yyyy'
 ) {
-
-  // _dateString comes in non parseable format, format date to be parseable
+	// _dateString comes in non parseable format, format date to be parseable
 	const dateArray = _dateString.split('-');
 	const birthMonth =
 		dateArray[1].length == 1 ? '0' + dateArray[1] : dateArray[1];
@@ -24,4 +25,17 @@ export function formatDateString(
 	const formattedDate = format(parseISO(dateString), formatString);
 
 	return formattedDate;
+}
+
+export async function fetchUsers() {
+	const response = await fetch(`${BASE_URL}/users?limit=60`);
+
+	const data: {
+		users: IUser[];
+		total: number;
+		skip: number;
+		limit: number;
+	} = await response.json();
+	const { users } = data;
+	return users;
 }

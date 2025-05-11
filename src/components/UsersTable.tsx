@@ -13,7 +13,7 @@ import { IUser } from '..';
 import { cn, formatDateString } from '~/lib/utils';
 
 const headers: { id: string; label: string; className?: string }[] = [
-	{ id: 'sn', label: 'S/N' },
+	{ id: 'id', label: 'ID' },
 	{ id: 'full_name', label: 'Full Name' },
 	{ id: 'city', label: 'City' },
 	{ id: 'birth_day', label: 'Birth Day' },
@@ -27,9 +27,9 @@ type Props = {
 
 const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 	return (
-		<div>
-			<Table>
-				<TableCaption>A list of Users.</TableCaption>
+		<div className='py-4 h-[500px] overflow-y-scroll'>
+			<Table className=''>
+				{/* <TableCaption>A list of Users.</TableCaption> */}
 				<TableHeader>
 					<TableRow>
 						{headers.map(({ label, className }) => (
@@ -42,7 +42,7 @@ const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 						))}
 					</TableRow>
 				</TableHeader>
-				<TableBody>
+				<TableBody className=''>
 					{users.length === 0 ? (
 						<EmptyTable />
 					) : (
@@ -62,17 +62,9 @@ const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 						})
 					)}
 				</TableBody>
-				<TableFooter>
-					<TableRow>
-						<TableCell colSpan={3} className="text-left">
-							Total
-						</TableCell>
-						<TableCell className="text-right">
-							{users.length}
-						</TableCell>
-					</TableRow>
-				</TableFooter>
+			
 			</Table>
+
 		</div>
 	);
 };

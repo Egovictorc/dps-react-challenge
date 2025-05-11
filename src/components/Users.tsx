@@ -6,12 +6,25 @@ import { IUser } from '..';
 import { BASE_URL } from '~/utils';
 import { Label } from './ui/label';
 import { useDebounce } from '~/hooks';
+import { Button } from './ui/button';
 
-
+const countPerRequest = 30;
+let isFirstTime = true;
 const Users = () => {
-	const [users, setUsers] = useState<IUser[]>([]);
-
+	// const [users, setUsers] = useState<IUser[]>([]);
+	const [{ isLoading, total, error, users }, setState] = useState<{
+		isLoading: boolean;
+		error: string;
+		total: number;
+		users: IUser[];
+	}>({
+		isLoading: false,
+		error: '',
+		users: [],
+		total: 0,
+	});
 	const [nameFilter, setNameFilter] = useState('');
+	const [limit, setLimit] = useState(30);
 	const [city, setCity] = useState('');
 	const [highlightOldest, setHighlightOldest] = useState(false);
 	const [oldestPerCity, setOldestPerCity] = useState<IUser[]>([]);
@@ -73,25 +86,44 @@ const Users = () => {
 		setHighlightOldest(checked);
 	};
 
-
 	useEffect(() => {
 		async function fetchUsers() {
-			const response = await fetch(BASE_URL + '/users');
-			const data: {
-				users: IUser[];
-				total: number;
-				skip: number;
-				limit: number;
-			} = await response.json();
-			const { users } = data;
-			// console.log('data ', users);
-			setUsers(users);
-			setFilteredUsers(users);
-			sortOldestPerCity(users);
+			try {
+				const existingLimit = isFirstTime
+					? 0
+					: parseInt(localStorage.getItem('limit') ?? '0');
+				const limit = existingLimit + 30;
+				setState((prev) => ({ ...prev, isLoading: true, error: '' }));
+				const response = await fetch(
+					`${BASE_URL}/users?limit=${limit}`
+				);
+
+				localStorage.setItem('limit', limit.toString());
+				isFirstTime = false;
+				const data: {
+					users: IUser[];
+					total: number;
+					skip: number;
+					limit: number;
+				} = await response.json();
+				const { users, total } = data;
+				// console.log('data ', users);
+				setFilteredUsers(users);
+				sortOldestPerCity(users);
+				setState({ isLoading: false, users, error: '', total });
+			} catch (err: unknown) {
+				const error = err as Error;
+				setState({
+					isLoading: false,
+					total: 0,
+					users: [],
+					error: error.message,
+				});
+			}
 		}
 
 		fetchUsers();
-	}, []);
+	}, [limit]);
 
 	const sortOldestPerCity = (_users: IUser[]) => {
 		const _usersPerCity: Map<string, IUser> = new Map();
@@ -111,7 +143,13 @@ const Users = () => {
 	};
 
 	return (
-		<div className="">
+		<div className=" border-2 rounded-md p-4">
+			{
+				// show error message
+				error && (
+					<p className="text-red-400"> Error occured: {error} </p>
+				)
+			}
 			<div className="flex flex-row items-center justify-around gap-4">
 				{/* **********************  name input filter begin here  *************************** */}
 				<div className="flex flex-col">
@@ -168,6 +206,18 @@ const Users = () => {
 				highlightOldest={highlightOldest}
 				oldestPerCity={oldestPerCity}
 			/>
+
+			<div className='flex flex-row justify-between py-4'>
+				<span>Total Users</span>
+				<span>{users.length}</span>
+			</div>
+			<button
+				onClick={() => setLimit(limit + countPerRequest)}
+				disabled={total <= users.length}
+				className=''
+			>
+				More
+			</button>
 		</div>
 	);
 };
