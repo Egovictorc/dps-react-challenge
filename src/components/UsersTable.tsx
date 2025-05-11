@@ -21,9 +21,11 @@ const headers: { id: string; label: string; className?: string }[] = [
 
 type Props = {
 	users: IUser[];
+	highlightOldest: boolean;
+	oldestPerCity: IUser[];
 };
 
-const UsersTable = ({ users }: Props) => {
+const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 	return (
 		<div>
 			<Table>
@@ -42,33 +44,22 @@ const UsersTable = ({ users }: Props) => {
 				</TableHeader>
 				<TableBody>
 					{users.length === 0 ? (
-						<TableRow className="h-40">
-							<TableCell colSpan={4} rowSpan={5}>
-								Empty Table
-							</TableCell>
-						</TableRow>
+						<EmptyTable />
 					) : (
-						users.map(
-							(
-								{ firstName, lastName, birthDate, address },
-								index
-							) => (
-								<TableRow key={uuidv4()}>
-									<TableCell className="font-medium text-left">
-										{index + 1}{' '}
-									</TableCell>
-									<TableCell className="font-medium text-left">
-										{`${firstName} ${lastName}`}
-									</TableCell>
-									<TableCell className="text-left">
-										{address.city}
-									</TableCell>
-									<TableCell className="text-left">{`${formatDateString(
-										birthDate
-									)}`}</TableCell>
-								</TableRow>
-							)
-						)
+						users.map((_u) => {
+							const isOldest =
+								oldestPerCity.findIndex(
+									({ id }) => id === _u.id
+								) != -1
+									? true
+									: false;
+							return (
+								<UserTableRow
+									user={_u}
+									selected={highlightOldest && isOldest}
+								/>
+							);
+						})
 					)}
 				</TableBody>
 				<TableFooter>
@@ -87,3 +78,34 @@ const UsersTable = ({ users }: Props) => {
 };
 
 export default UsersTable;
+
+const EmptyTable = () => {
+	return (
+		<TableRow className="h-40">
+			<TableCell colSpan={4} rowSpan={5}>
+				Empty Table
+			</TableCell>
+		</TableRow>
+	);
+};
+
+const UserTableRow = ({
+	user: { id, firstName, lastName, birthDate, address },
+	selected,
+}: {
+	user: IUser;
+	selected: boolean;
+}) => {
+	return (
+		<TableRow key={uuidv4()} className={cn(selected && 'bg-slate-600')}>
+			<TableCell className="font-medium text-left">{id}</TableCell>
+			<TableCell className="font-medium text-left">
+				{`${firstName} ${lastName}`}
+			</TableCell>
+			<TableCell className="text-left">{address.city}</TableCell>
+			<TableCell className="text-left">{`${formatDateString(
+				birthDate
+			)}`}</TableCell>
+		</TableRow>
+	);
+};

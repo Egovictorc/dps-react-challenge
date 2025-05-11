@@ -1,40 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { CheckedState } from '@radix-ui/react-checkbox';
+import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import UsersTable from './UsersTable';
 import { IUser } from '..';
 import { BASE_URL } from '~/utils';
 import { Label } from './ui/label';
-import { dummyUsers } from '~/_mock';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from './ui/select';
-import { Checkbox } from './ui/checkbox';
 import { useDebounce } from '~/hooks';
 
-type FilterProps = {
-	filter: string;
-	value: string;
-};
 
 const Users = () => {
-	// const [users, setUsers] = useState<IUser[]>([]);
-	// const users: IUser[] = dummyUsers.users;
-	const users: IUser[] = [];
+	const [users, setUsers] = useState<IUser[]>([]);
 
 	const [nameFilter, setNameFilter] = useState('');
 	const [city, setCity] = useState('');
 	const [highlightOldest, setHighlightOldest] = useState(false);
+	const [oldestPerCity, setOldestPerCity] = useState<IUser[]>([]);
+
 	const [filteredUsers, setFilteredUsers] = useState<IUser[]>(users);
 	const debouncedSearchTerm = useDebounce(nameFilter);
 
-	console.log("users ", users);
+	// console.log("users ", users);
 	useEffect(() => {
 		if (debouncedSearchTerm) {
 			const selected = users.filter(
@@ -88,6 +73,7 @@ const Users = () => {
 		setHighlightOldest(checked);
 	};
 
+
 	useEffect(() => {
 		async function fetchUsers() {
 			const response = await fetch(BASE_URL + '/users');
@@ -99,12 +85,30 @@ const Users = () => {
 			} = await response.json();
 			const { users } = data;
 			// console.log('data ', users);
-
+			setUsers(users);
 			setFilteredUsers(users);
+			sortOldestPerCity(users);
 		}
 
 		fetchUsers();
 	}, []);
+
+	const sortOldestPerCity = (_users: IUser[]) => {
+		const _usersPerCity: Map<string, IUser> = new Map();
+		_users.forEach((_u) => {
+			const _city = _u.address.city.trim().toLowerCase();
+			if (_usersPerCity.has(_city)) {
+				const currentOldest = _usersPerCity.get(_city);
+				const isOlder = _u.birthDate < currentOldest!.birthDate;
+				if (isOlder) _usersPerCity.set(_city, _u);
+			} else {
+				_usersPerCity.set(_city, _u);
+			}
+		});
+
+		setOldestPerCity([..._usersPerCity.values()]);
+		// setOldestPerCity(Array.from(_usersPerCity.values()));
+	};
 
 	return (
 		<div className="">
@@ -159,7 +163,11 @@ const Users = () => {
 					</div>
 				</div>
 			</div>
-			<UsersTable users={filteredUsers} />
+			<UsersTable
+				users={filteredUsers}
+				highlightOldest={highlightOldest}
+				oldestPerCity={oldestPerCity}
+			/>
 		</div>
 	);
 };
