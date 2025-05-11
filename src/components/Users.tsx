@@ -162,7 +162,7 @@ const Users = () => {
 						value={nameFilter}
 						placeholder="eg: John"
 						onChange={nameChangeFilter}
-						className="max-w-40 bg-red-500"
+						className="max-w-40 text-white"
 					/>
 				</div>
 				{/* **********************  name input filter end here  *************************** */}
@@ -172,7 +172,7 @@ const Users = () => {
 					<Label htmlFor="name" className="">
 						City
 					</Label>
-					<select value={city} onChange={cityChangeHandler}>
+					<select value={city} onChange={cityChangeHandler} className='text-white'>
 						<option value={''}>All</option>
 
 						{users.map(({ address }) => (
