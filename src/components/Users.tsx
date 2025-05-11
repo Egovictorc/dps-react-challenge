@@ -205,6 +205,7 @@ const Users = () => {
 				users={filteredUsers}
 				highlightOldest={highlightOldest}
 				oldestPerCity={oldestPerCity}
+				isLoading={isLoading}
 			/>
 
 			<div className='flex flex-row justify-between py-4'>
@@ -213,7 +214,7 @@ const Users = () => {
 			</div>
 			<button
 				onClick={() => setLimit(limit + countPerRequest)}
-				disabled={total <= users.length}
+				disabled={total <= users.length  || isLoading}
 				className=''
 			>
 				More

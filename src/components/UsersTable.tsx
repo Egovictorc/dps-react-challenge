@@ -23,12 +23,18 @@ type Props = {
 	users: IUser[];
 	highlightOldest: boolean;
 	oldestPerCity: IUser[];
+	isLoading: boolean;
 };
 
-const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
+const UsersTable = ({
+	users,
+	oldestPerCity,
+	isLoading,
+	highlightOldest,
+}: Props) => {
 	return (
-		<div className='py-4 h-[500px] overflow-y-scroll'>
-			<Table className=''>
+		<div className="py-4 h-[500px] overflow-y-scroll">
+			<Table className="">
 				{/* <TableCaption>A list of Users.</TableCaption> */}
 				<TableHeader>
 					<TableRow>
@@ -42,8 +48,8 @@ const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 						))}
 					</TableRow>
 				</TableHeader>
-				<TableBody className=''>
-					{users.length === 0 ? (
+				<TableBody className="">
+					{!isLoading && users.length === 0 ? (
 						<EmptyTable />
 					) : (
 						users.map((_u) => {
@@ -55,16 +61,22 @@ const UsersTable = ({ users, oldestPerCity, highlightOldest }: Props) => {
 									: false;
 							return (
 								<UserTableRow
+									key={uuidv4()}
 									user={_u}
 									selected={highlightOldest && isOldest}
 								/>
 							);
 						})
 					)}
+					{isLoading && (
+						<TableRow className="h-40">
+							<TableCell colSpan={4} rowSpan={5}>
+								Fetching data..., please wait
+							</TableCell>
+						</TableRow>
+					)}
 				</TableBody>
-			
 			</Table>
-
 		</div>
 	);
 };
